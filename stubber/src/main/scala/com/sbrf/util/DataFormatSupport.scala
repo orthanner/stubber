@@ -15,7 +15,14 @@ trait DataFormatSupport[V, C, R] {
   sealed trait Command
   final case class Transform(data: C, path: Uri.Path, replyTo: ActorRef[Response]) extends Command
 
-  protected def transform(data: C, path: Uri.Path): Try[Option[R]]
+  var transformers: Map[Uri.Path, DataTransformer] = Map[Uri.Path, DataTransformer]()
+
+  private def transform(data: C, path: Uri.Path): Try[Option[R]] = Try {
+    transformers.get(path) map( _ << data)
+  }
+
+  def register(transformer: DataTransformer): Unit =
+    transformers = transformers + (Uri.Path(transformer.getClass.getAnnotation(classOf[BindTo]).value()) -> transformer)
 
   def apply(): Behavior[Command] =
     Behaviors.receiveMessage {

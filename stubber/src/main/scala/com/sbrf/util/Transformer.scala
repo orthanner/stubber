@@ -6,14 +6,11 @@ trait Transformer[T, S, A, B, C, R] {
   val makeAttr: A => B
   val makeElement: B => C
   val valueExtractor: S => A
-  private def function: List[S] => List[Try[C]] = transformData(valueExtractor, makeAttr, makeElement)
 
   def check: Try[C] => Boolean = _ => true
 
-  final def apply(data: T): R = {
-    val queue: List[Try[C]] = function(extractValue(data))
-    render(queue filter check map {_.recover( e => recover(e)).get})
-  }
+  final def apply(data: T): R =
+    render(transformData(valueExtractor, makeAttr, makeElement)(extractValue(data)) filter check map {_.recover(recover(_)).get})
 
   final def <<(data: T): R = apply(data)
 
