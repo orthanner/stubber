@@ -44,18 +44,26 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command], xmlSupport: Actor
       rq.entity.contentType.mediaType match {
         case MediaTypes.`text/xml` | MediaTypes.`application/xml` =>
           entity(as[NodeSeq]) { data =>
-            val future: Future[XMLSupport.Response] = xmlSupport ? (XMLSupport.Transform(data, rq.uri.path, _))
+            val future: Future[XMLSupport.Response] = xmlSupport ? (XMLSupport.Transform(data, rq, _))
             onSuccess(future) {
-              case XMLSupport.Success(nodes) => complete(nodes)
+              case XMLSupport.Success(nodes) => nodes match {
+                case Left(value) => complete(value)
+                case Right(value) => complete(value)
+              }
               case XMLSupport.Failure(error) => notFound(error.getMessage)
+              case XMLSupport.NotFound => reject
             }
           }
         case MediaTypes.`application/json` =>
           entity(as[JsValue]) { data =>
-            val future: Future[JsonSupport.Response] = jsonSupport ? (JsonSupport.Transform(data, rq.uri.path, _))
+            val future: Future[JsonSupport.Response] = jsonSupport ? (JsonSupport.Transform(data, rq, _))
             onSuccess(future) {
-              case JsonSupport.Success(nodes) => complete(StatusCodes.OK, nodes)
+              case JsonSupport.Success(nodes) => nodes match {
+                case Left(value) => complete(value)
+                case Right(value) => reject
+              }
               case JsonSupport.Failure(error) => notFound(error.getMessage)
+              case JsonSupport.NotFound => reject
             }
           }
         case _ => pathPrefix("users") {

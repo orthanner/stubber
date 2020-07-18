@@ -1,11 +1,14 @@
 package com.sbrf.util.xml
 
+import akka.http.scaladsl.model.HttpRequest
 import com.sbrf.util.{BindTo, Transformer}
+import spray.json.JsValue
 
 import scala.xml._
+import cats.implicits._
 
 @BindTo("/")
-object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem, NodeSeq] {
+object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem, Either[NodeSeq, _ <: JsValue]] {
 
   val makeAttr: Int => UnprefixedAttribute = v => new UnprefixedAttribute("content", v.toString, Null)
 
@@ -13,10 +16,10 @@ object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem,
 
   val valueExtractor: Node => Int = x => (x \@ "value").toInt + 2
 
-  override def render(queue: List[Elem]): NodeSeq =
+  override def render(rq: HttpRequest, queue: List[Elem]): Either[NodeSeq, JsValue] =
     <response>
       {queue}
-    </response>
+    </response>.asLeft
 
   override def recover(e: Throwable): Elem =
     new Elem(null, "failure", new UnprefixedAttribute("message", e.getMessage, Null), TopScope, minimizeEmpty = true)
