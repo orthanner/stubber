@@ -8,11 +8,12 @@ import scala.util.Try
 import scala.xml.{Elem, Node, NodeSeq, UnprefixedAttribute}
 
 object XMLSupport extends DataFormatSupport[Node, NodeSeq] {
+  type XmlTransformer = Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem, NodeSeq]
 
-  var transformers: Map[Uri.Path, Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem]] =
-    new HashMap[Uri.Path, Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem]]()
+  var transformers: Map[Uri.Path, XmlTransformer] =
+    new HashMap[Uri.Path, XmlTransformer]()
 
-  def register(transformer: Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem]): Unit =
+  def register(transformer: XmlTransformer): Unit =
     transformers = transformers + ((Uri.Path(transformer.getClass.getAnnotation(classOf[BindTo]).value()), transformer))
 
   override protected def transform(data: NodeSeq, path: Uri.Path): Try[Option[NodeSeq]] =

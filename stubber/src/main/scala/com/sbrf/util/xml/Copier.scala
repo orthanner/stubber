@@ -5,7 +5,7 @@ import com.sbrf.util.BindTo
 import scala.xml._
 
 @BindTo("/")
-object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem] {
+object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem, NodeSeq] {
 
   val makeAttr: Int => UnprefixedAttribute = v => new UnprefixedAttribute("content", v.toString, Null)
 

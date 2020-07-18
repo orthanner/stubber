@@ -5,7 +5,7 @@ import com.sbrf.util.xml.Transformer
 import spray.json.{JsArray, JsNumber, JsObject, JsString, JsValue}
 
 @BindTo("/demo")
-object HandlerExample extends Transformer[JsValue, JsValue, Int, JsNumber, JsValue] {
+object HandlerExample extends Transformer[JsValue, JsValue, Int, JsNumber, JsValue, JsValue] {
   override val makeAttr: Int => JsNumber = JsNumber(_)
   override val makeElement: JsNumber => JsValue = identity
   override val valueExtractor: JsValue => Int = x => x.asInstanceOf[JsNumber].value.intValue + 5
