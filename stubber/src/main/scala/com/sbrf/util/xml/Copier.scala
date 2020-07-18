@@ -1,6 +1,6 @@
 package com.sbrf.util.xml
 
-import com.sbrf.util.BindTo
+import com.sbrf.util.{BindTo, Transformer}
 
 import scala.xml._
 

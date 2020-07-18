@@ -5,15 +5,14 @@ import com.sbrf.util.{BindTo, DataFormatSupport}
 
 import scala.collection.immutable.HashMap
 import scala.util.Try
-import scala.xml.{Elem, Node, NodeSeq, UnprefixedAttribute}
+import scala.xml.{Node, NodeSeq}
 
-object XMLSupport extends DataFormatSupport[Node, NodeSeq] {
-  type XmlTransformer = Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem, NodeSeq]
+object XMLSupport extends DataFormatSupport[Node, NodeSeq, NodeSeq] {
 
-  var transformers: Map[Uri.Path, XmlTransformer] =
-    new HashMap[Uri.Path, XmlTransformer]()
+  var transformers: Map[Uri.Path, DataTransformer] =
+    new HashMap[Uri.Path, DataTransformer]()
 
-  def register(transformer: XmlTransformer): Unit =
+  def register(transformer: DataTransformer): Unit =
     transformers = transformers + ((Uri.Path(transformer.getClass.getAnnotation(classOf[BindTo]).value()), transformer))
 
   override protected def transform(data: NodeSeq, path: Uri.Path): Try[Option[NodeSeq]] =

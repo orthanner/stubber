@@ -1,21 +1,18 @@
 package com.sbrf.util.json
 
 import akka.http.scaladsl.model.Uri
-import com.sbrf.util.xml.Transformer
 import com.sbrf.util.{BindTo, DataFormatSupport}
 
 import scala.collection.immutable.HashMap
 import scala.util.Try
-import cats.implicits._
-import spray.json.{JsNumber, JsValue}
+import spray.json.JsValue
 
-object JsonSupport extends DataFormatSupport[JsValue, JsValue] {
-  type JsonTransformer = Transformer[JsValue, JsValue, Int, JsNumber, JsValue, JsValue]
+object JsonSupport extends DataFormatSupport[JsValue, JsValue, JsValue] {
 
-  var transformers: Map[Uri.Path, JsonTransformer] =
-    new HashMap[Uri.Path, JsonTransformer]()
+  var transformers: Map[Uri.Path, DataTransformer] =
+    new HashMap[Uri.Path, DataTransformer]()
 
-  def register(transformer: JsonTransformer): Unit =
+  def register(transformer: DataTransformer): Unit =
     transformers = transformers + (Uri.Path(transformer.getClass.getAnnotation(classOf[BindTo]).value()) -> transformer)
 
   override protected def transform(data: JsValue, path: Uri.Path): Try[Option[JsValue]] = Try {

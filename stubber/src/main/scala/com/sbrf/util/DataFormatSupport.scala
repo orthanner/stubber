@@ -5,15 +5,17 @@ import akka.http.scaladsl.model.Uri
 
 import scala.util.Try
 
-trait DataFormatSupport[V, C] {
+trait DataFormatSupport[V, C, R] {
+  type DataTransformer = Transformer[C, V, _, _, _, R]
+
   sealed trait Response
-  final case class Success(nodes: C) extends Response
+  final case class Success(nodes: R) extends Response
   final case class Failure(error: Throwable) extends Response
 
   sealed trait Command
-  final case class Transform(xml: C, path: Uri.Path, replyTo: ActorRef[Response]) extends Command
+  final case class Transform(data: C, path: Uri.Path, replyTo: ActorRef[Response]) extends Command
 
-  protected def transform(xml: C, path: Uri.Path): Try[Option[C]]
+  protected def transform(data: C, path: Uri.Path): Try[Option[R]]
 
   def apply(): Behavior[Command] =
     Behaviors.receiveMessage {

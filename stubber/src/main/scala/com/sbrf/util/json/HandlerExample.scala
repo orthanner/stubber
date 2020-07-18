@@ -1,7 +1,6 @@
 package com.sbrf.util.json
 
-import com.sbrf.util.BindTo
-import com.sbrf.util.xml.Transformer
+import com.sbrf.util.{BindTo, Transformer}
 import spray.json.{JsArray, JsNumber, JsObject, JsString, JsValue}
 
 @BindTo("/demo")
