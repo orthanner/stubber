@@ -44,7 +44,7 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command], xmlSupport: Actor
       rq.entity.contentType.mediaType match {
         case MediaTypes.`text/xml` | MediaTypes.`application/xml` =>
           entity(as[NodeSeq]) { data =>
-            val future: Future[XMLSupport.Response] = xmlSupport ? (XMLSupport.Transform(data.toList, rq.uri.path, _))
+            val future: Future[XMLSupport.Response] = xmlSupport ? (XMLSupport.Transform(data, rq.uri.path, _))
             onSuccess(future) {
               case XMLSupport.Success(nodes) => complete(nodes)
               case XMLSupport.Failure(error) => notFound(error.getMessage)
@@ -52,7 +52,7 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command], xmlSupport: Actor
           }
         case MediaTypes.`application/json` =>
           entity(as[JsValue]) { data =>
-            val future: Future[JsonSupport.Response] = jsonSupport ? (JsonSupport.Transform(data::Nil, rq.uri.path, _))
+            val future: Future[JsonSupport.Response] = jsonSupport ? (JsonSupport.Transform(data, rq.uri.path, _))
             onSuccess(future) {
               case JsonSupport.Success(nodes) => complete(StatusCodes.OK, nodes)
               case JsonSupport.Failure(error) => notFound(error.getMessage)

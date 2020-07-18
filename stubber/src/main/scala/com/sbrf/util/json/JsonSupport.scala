@@ -16,12 +16,7 @@ object JsonSupport extends DataFormatSupport[JsValue, JsValue] {
   def register(transformer: Transformer[JsValue, JsValue, Int, JsNumber, JsValue]): Unit =
     transformers = transformers + (Uri.Path(transformer.getClass.getAnnotation(classOf[BindTo]).value()) -> transformer)
 
-  override protected def transform(data: List[JsValue], path: Uri.Path): Try[Option[JsValue]] = Try {
-    val value: List[Option[JsValue]] = data map { e => transformers.get(path) map { _ << e } }
-    value.sequence flatMap { _ match {
-      case Nil => Some(JsArray(Vector.empty))
-      case x::Nil => Some(x)
-      case x::xs => Some(JsArray(Vector.from(x::xs)))
-    }}
+  override protected def transform(data: JsValue, path: Uri.Path): Try[Option[JsValue]] = Try {
+    transformers.get(path) map { _ << data }
   }
 }

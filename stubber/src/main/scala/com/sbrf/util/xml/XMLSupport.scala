@@ -15,7 +15,7 @@ object XMLSupport extends DataFormatSupport[Node, NodeSeq] {
   def register(transformer: Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem]): Unit =
     transformers = transformers + ((Uri.Path(transformer.getClass.getAnnotation(classOf[BindTo]).value()), transformer))
 
-  override protected def transform(data: List[Node], path: Uri.Path): Try[Option[NodeSeq]] =
+  override protected def transform(data: NodeSeq, path: Uri.Path): Try[Option[NodeSeq]] =
     Try {
       transformers.get(path) map {
         _ << data

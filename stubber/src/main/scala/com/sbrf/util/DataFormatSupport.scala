@@ -11,9 +11,9 @@ trait DataFormatSupport[V, C] {
   final case class Failure(error: Throwable) extends Response
 
   sealed trait Command
-  final case class Transform(xml: List[V], path: Uri.Path, replyTo: ActorRef[Response]) extends Command
+  final case class Transform(xml: C, path: Uri.Path, replyTo: ActorRef[Response]) extends Command
 
-  protected def transform(xml: List[V], path: Uri.Path): Try[Option[C]]
+  protected def transform(xml: C, path: Uri.Path): Try[Option[C]]
 
   def apply(): Behavior[Command] =
     Behaviors.receiveMessage {
