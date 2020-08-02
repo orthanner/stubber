@@ -50,6 +50,7 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command], xmlSupport: Actor
                 case Left(value) => complete(value)
                 case Right(value) => complete(value)
               }
+              case XMLSupport.Pass(response) => complete(response)
               case XMLSupport.Failure(error) => notFound(error.getMessage)
               case XMLSupport.NotFound => reject
             }
@@ -60,8 +61,9 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command], xmlSupport: Actor
             onSuccess(future) {
               case JsonSupport.Success(nodes) => nodes match {
                 case Left(value) => complete(value)
-                case Right(value) => reject
+                case Right(_) => reject
               }
+              case JsonSupport.Pass(response) => complete(response)
               case JsonSupport.Failure(error) => notFound(error.getMessage)
               case JsonSupport.NotFound => reject
             }
