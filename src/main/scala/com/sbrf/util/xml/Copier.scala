@@ -8,9 +8,9 @@ import scala.xml._
 import cats.implicits._
 
 @BindTo("/")
-object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem, Either[NodeSeq, _ <: JsValue]] {
+object Copier extends Transformer[HttpRequest, NodeSeq, Node, Int, UnprefixedAttribute, Elem, Either[NodeSeq, _ <: JsValue]] {
 
-  val makeAttr: Int => UnprefixedAttribute = v => new UnprefixedAttribute("content", v.toString, Null)
+  val makeAttr: (HttpRequest, Int) => UnprefixedAttribute = (_, v) => new UnprefixedAttribute("content", v.toString, Null)
 
   val makeElement: UnprefixedAttribute => Elem = attr => Elem(null, "copy", attr, TopScope, minimizeEmpty = true)
 
@@ -24,5 +24,5 @@ object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem,
   override def recover(e: Throwable): Elem =
     new Elem(null, "failure", new UnprefixedAttribute("message", e.getMessage, Null), TopScope, minimizeEmpty = true)
 
-  override def unwrapRequest(root: NodeSeq): List[Node] = (root \ "element").theSeq.toList
+  override def unwrapRequest(rq: HttpRequest, root: NodeSeq): List[Node] = (root \ "element").theSeq.toList
 }

@@ -24,7 +24,7 @@ trait DataFormatSupport[C, R] {
   /**
    * Функция преобразования `C => R`
    */
-  type DataTransformer = Transformer[C, _, _, _, _, R]
+  type DataTransformer = Transformer[HttpRequest, C, _, _, _, _, R]
   /**
    * справочник обработчиков для различных URI
    */

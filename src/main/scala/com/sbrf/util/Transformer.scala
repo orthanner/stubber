@@ -19,11 +19,11 @@ import cats.implicits._
  * @tparam C тип выходных значений
  * @tparam R тип возвращаемого результата
  */
-trait Transformer[T, S, A, B, C, R] {
+trait Transformer[Q, T, S, A, B, C, R] {
 
   type Result = R
 
-  val makeAttr: A => B
+  val makeAttr: (Q, A) => B
   val makeElement: B => C
   val valueExtractor: S => A
 
@@ -33,17 +33,17 @@ trait Transformer[T, S, A, B, C, R] {
    */
   def check: UnsafeValue[C] => Boolean = _ => true
 
-  final def apply: HttpRequest => T => R = rq => data =>
-    render(rq, transformData(valueExtractor, makeAttr, makeElement)(unwrapRequest(data)) filter check map { _ valueOr recover })
+  final def apply: Q => T => R = rq => data =>
+    render(rq, transformData(valueExtractor, makeAttr, makeElement)(rq)(unwrapRequest(rq, data)) filter check map { _ valueOr recover })
 
-  final def << : HttpRequest => T => R = apply
+  final def << : Q => T => R = apply
 
   /**
    * &laquo;Распаковывает&raquo; тело запроса в список (возможно, из одного элемента)
    * @param body тело запроса
    * @return список содержащихся в запросе объектов
    */
-  def unwrapRequest(body: T): List[S]
+  def unwrapRequest(rq: Q, body: T): List[S]
 
   /**
    * конвертирует результат в ответ
@@ -51,7 +51,7 @@ trait Transformer[T, S, A, B, C, R] {
    * @param queue список объектов, полученных в результате обработки запроса
    * @return ответ
    */
-  def render(rq: HttpRequest, queue: List[C]): Result
+  def render(rq: Q, queue: List[C]): Result
 
   /**
    * Обрабатывает ошибку

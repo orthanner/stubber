@@ -7,12 +7,12 @@ import spray.json.{JsArray, JsNumber, JsObject, JsString, JsValue}
 import cats.implicits._
 
 @BindTo("/demo")
-object HandlerExample extends Transformer[JsValue, JsValue, Int, JsNumber, JsValue, Either[_ <: JsValue, Nothing]] {
-  override val makeAttr: Int => JsNumber = JsNumber(_)
+object HandlerExample extends Transformer[HttpRequest, JsValue, JsValue, Int, JsNumber, JsValue, Either[_ <: JsValue, Nothing]] {
+  override val makeAttr: (HttpRequest, Int) => JsNumber = (_, value) => JsNumber(value)
   override val makeElement: JsNumber => JsValue = identity
   override val valueExtractor: JsValue => Int = x => x.asInstanceOf[JsNumber].value.intValue + 5
 
-  override def unwrapRequest(root: JsValue): List[JsValue] = root.asInstanceOf[JsArray].elements.toList
+  override def unwrapRequest(rq: HttpRequest, root: JsValue): List[JsValue] = root.asInstanceOf[JsArray].elements.toList
 
   override def render(rq: HttpRequest, queue: List[JsValue]): Result =
     JsObject("data" -> JsArray(queue.toVector)).asLeft

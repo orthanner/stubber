@@ -7,11 +7,13 @@ package object util {
 
   type UnsafeValue[A] = Either[Throwable, A]
 
-  def transformData[X, A, B, C](valueExtractor: X => A, makeAttr: A => B, makeElement: B => C): List[X] => List[UnsafeValue[C]] = {
+  def transformData[R, X, A, B, C](valueExtractor: X => A, makeAttr: (R, A) => B, makeElement: B => C): R => List[X] => List[UnsafeValue[C]] = {
     import cats.instances.either._
 
     val safeExtractor: X => UnsafeValue[A] = x => MonadError[UnsafeValue, Throwable].catchNonFatal {valueExtractor(x)}
 
-    Functor[List].lift(safeExtractor fmap Functor[UnsafeValue].lift(makeAttr fmap makeElement))
+    val transformElement: R => A => B = rq => makeAttr(rq, _)
+
+    rq: R => Functor[List].lift(safeExtractor fmap Functor[UnsafeValue].lift(transformElement(rq) fmap makeElement))
   }
 }
