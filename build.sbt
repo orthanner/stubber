@@ -7,7 +7,8 @@ scalaVersion := "2.13.3"
 scalacOptions := Seq(
   "-unchecked",
   "-language:higherKinds",
-  "-language:existentials"
+  "-language:existentials",
+  "-language:postfixOps"
 )
 
 lazy val akkaHttpVersion = "10.1.12"

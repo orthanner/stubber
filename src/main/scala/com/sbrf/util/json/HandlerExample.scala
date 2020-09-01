@@ -12,9 +12,9 @@ object HandlerExample extends Transformer[JsValue, JsValue, Int, JsNumber, JsVal
   override val makeElement: JsNumber => JsValue = identity
   override val valueExtractor: JsValue => Int = x => x.asInstanceOf[JsNumber].value.intValue + 5
 
-  override def extractValue(root: JsValue): List[JsValue] = root.asInstanceOf[JsArray].elements.toList
+  override def unwrapRequest(root: JsValue): List[JsValue] = root.asInstanceOf[JsArray].elements.toList
 
-  override def render(rq: HttpRequest, queue: List[JsValue]): Either[_ <: JsValue, Nothing] =
+  override def render(rq: HttpRequest, queue: List[JsValue]): Result =
     JsObject("data" -> JsArray(queue.toVector)).asLeft
 
   override def recover(e: Throwable): JsValue =

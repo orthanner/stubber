@@ -16,7 +16,7 @@ object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem,
 
   val valueExtractor: Node => Int = x => (x \@ "value").toInt + 2
 
-  override def render(rq: HttpRequest, queue: List[Elem]): Either[NodeSeq, JsValue] =
+  override def render(rq: HttpRequest, queue: List[Elem]): Result =
     <response>
       {queue}
     </response>.asLeft
@@ -24,5 +24,5 @@ object Copier extends Transformer[NodeSeq, Node, Int, UnprefixedAttribute, Elem,
   override def recover(e: Throwable): Elem =
     new Elem(null, "failure", new UnprefixedAttribute("message", e.getMessage, Null), TopScope, minimizeEmpty = true)
 
-  override def extractValue(root: NodeSeq): List[Node] = (root \ "element").theSeq.toList
+  override def unwrapRequest(root: NodeSeq): List[Node] = (root \ "element").theSeq.toList
 }

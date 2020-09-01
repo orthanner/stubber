@@ -28,7 +28,7 @@ trait DataFormatSupport[C, R] {
   /**
    * справочник обработчиков для различных URI
    */
-  var transformers: Map[Uri.Path, DataTransformer] = Map[Uri.Path, DataTransformer]()
+  var transformers: Map[String, DataTransformer] = Map[String, DataTransformer]()
 
   /**
    * регистрирует обработчик
@@ -36,7 +36,7 @@ trait DataFormatSupport[C, R] {
    * @param transformer обработчик
    */
   def register(transformer: DataTransformer): Unit =
-    transformers = transformers + (Uri.Path(transformer.getClass.getAnnotation(classOf[BindTo]).value()) -> transformer)
+    transformers = transformers + (transformer.getClass.getAnnotation(classOf[BindTo]).value() -> transformer)
 
   def apply(): Behavior[Command] =
     Behaviors.receive[Command] { (ctx: ActorContext[Command], command: Command) =>
@@ -62,7 +62,7 @@ trait DataFormatSupport[C, R] {
     }
 
   private def transform(rq: HttpRequest, data: C, path: Uri.Path): Try[Option[R]] = Try {
-    transformers.get(path) fmap (_ << rq) map (_ (data))
+    transformers.get(path.toString()) fmap (_ << rq) map (_ (data))
   }
 
   private def proxy(dst: ActorRef[Response]): HttpResponse => Proxy = Proxy(_, dst)
