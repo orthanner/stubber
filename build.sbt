@@ -1,15 +1,19 @@
-lazy val akkaHttpVersion = "10.1.12"
-lazy val akkaVersion = "2.6.7"
-lazy val catsVersion = "2.0.0"
+name := "stubber"
 
-organization := "com.sbrf"
+version := "0.1"
+
 scalaVersion := "2.13.3"
+
 scalacOptions := Seq(
   "-unchecked",
   "-language:higherKinds",
   "-language:existentials"
 )
-name := "stubber"
+
+lazy val akkaHttpVersion = "10.1.12"
+lazy val akkaVersion = "2.6.7"
+lazy val catsVersion = "2.0.0"
+
 libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
