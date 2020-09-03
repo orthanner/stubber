@@ -8,7 +8,7 @@ import cats.implicits._
 
 @BindTo("/demo")
 object HandlerExample extends Transformer[HttpRequest, JsValue, JsValue, Int, JsNumber, JsValue, Either[_ <: JsValue, Nothing]] {
-  override val makeAttr: (HttpRequest, Int) => JsNumber = (_, value) => JsNumber(value)
+  override val makeAttr: (HttpRequest, Int) => Option[JsNumber] = (_, value) => JsNumber(value).some
   override val makeElement: JsNumber => JsValue = identity
   override val valueExtractor: JsValue => Int = x => x.asInstanceOf[JsNumber].value.intValue + 5
 

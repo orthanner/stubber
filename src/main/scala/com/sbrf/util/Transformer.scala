@@ -1,7 +1,5 @@
 package com.sbrf.util
 
-import akka.http.scaladsl.model.HttpRequest
-
 import cats.implicits._
 
 /**
@@ -23,7 +21,7 @@ trait Transformer[Q, T, S, A, B, C, R] {
 
   type Result = R
 
-  val makeAttr: (Q, A) => B
+  val makeAttr: (Q, A) => Option[B]
   val makeElement: B => C
   val valueExtractor: S => A
 

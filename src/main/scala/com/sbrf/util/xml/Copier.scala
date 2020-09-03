@@ -10,7 +10,7 @@ import cats.implicits._
 @BindTo("/")
 object Copier extends Transformer[HttpRequest, NodeSeq, Node, Int, UnprefixedAttribute, Elem, Either[NodeSeq, _ <: JsValue]] {
 
-  val makeAttr: (HttpRequest, Int) => UnprefixedAttribute = (_, v) => new UnprefixedAttribute("content", v.toString, Null)
+  val makeAttr: (HttpRequest, Int) => Option[UnprefixedAttribute] = (_, v) => new UnprefixedAttribute("content", v.toString, Null).some
 
   val makeElement: UnprefixedAttribute => Elem = attr => Elem(null, "copy", attr, TopScope, minimizeEmpty = true)
 
