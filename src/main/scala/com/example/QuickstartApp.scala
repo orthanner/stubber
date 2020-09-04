@@ -5,8 +5,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
-import com.sbrf.util.json.JsonSupport
-import com.sbrf.util.xml.XMLSupport
+import com.sbrf.util.akka_.{JsonSupport, XMLSupport}
 
 import scala.util.Failure
 import scala.util.Success

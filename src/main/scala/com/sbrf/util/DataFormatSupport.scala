@@ -1,30 +1,26 @@
 package com.sbrf.util
 
-import akka.actor.ActorSystem
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
-
-import scala.util.Try
 import cats.implicits._
 
-import scala.concurrent.Future
+import scala.util.Try
 
 /**
  * Базовый класс для акторов, осуществляющих обработку запросов. Конкретный обработчик выбирается исходя из переданного пути.
- * Представляет собой функцию `(Uri.Path, C) => Response[R]`. Для обработки запросов на определённый путь сначала
+ * Представляет собой функцию `(String, C) => Response[R]`. Для обработки запросов на определённый путь сначала
  * необходимо зарегистрировать функцию обработки запросов к этому пути.
  *
+ * @tparam Q тип запроса
  * @tparam C тип исходных данных
  * @tparam R тип выходных данных
+ * @tparam P тип ответа прокси
+ * @tparam T тип получателя ответов
  * @see com.sbrf.util.BindTo
  */
-trait DataFormatSupport[C, R] {
+trait DataFormatSupport[Q, C, R, P, T[_]] {
   /**
    * Функция преобразования `C => R`
    */
-  type DataTransformer = Transformer[HttpRequest, C, _, _, _, _, R]
+  type DataTransformer = Transformer[Q, C, _, _, _, _, R]
   /**
    * справочник обработчиков для различных URI
    */
@@ -38,39 +34,11 @@ trait DataFormatSupport[C, R] {
   def register(transformer: DataTransformer): Unit =
     transformers = transformers + (transformer.getClass.getAnnotation(classOf[BindTo]).value() -> transformer)
 
-  def apply(): Behavior[Command] =
-    Behaviors.receive[Command] { (ctx: ActorContext[Command], command: Command) =>
-      implicit val sys: ActorSystem = ctx.system.classicSystem
-      command match {
-        case Transform(nodes, rq, replyTo) =>
-          val path = rq.uri.path
-          val result = transform(rq, nodes, path) map {
-            case Some(value) => Success(value)
-            case None =>
-              ctx.pipeToSelf(doRequest(rq))(_ map proxy(replyTo) recover {e => FailedRequest(replyTo).print(e)} get)
-              NotFound
-          }
-          result recover { e => Failure(e) } filter NotFound.ne foreach replyTo.tell
-
-        case Proxy(response, dst) =>
-          dst ! Pass(response)
-
-        case FailedRequest(dst) =>
-          dst ! NotFound
-      }
-      Behaviors.same
-    }
-
-  private def transform(rq: HttpRequest, data: C, path: Uri.Path): Try[Option[R]] = Try {
-    transformers.get(path.toString()) fmap (_ << rq) map (_ (data))
+  def transform(rq: Q, data: C): Try[Option[R]] = Try {
+    transformers.get(getPathFromRequest(rq)) fmap (_ << rq) map (_ (data))
   }
 
-  private def proxy(dst: ActorRef[Response]): HttpResponse => Proxy = Proxy(_, dst)
-
-  def rewrite(uri: Uri): Uri = uri.copy(authority = uri.authority.copy(port = 9999))
-
-  private def doRequest(rq: HttpRequest)(implicit sys: ActorSystem): Future[HttpResponse] =
-    Http().singleRequest(rq.copy(uri = rewrite(rq.uri)))
+  def getPathFromRequest(rq: Q): String
 
   /**
    * Ответ актора
@@ -100,7 +68,7 @@ trait DataFormatSupport[C, R] {
    * Ответ внешнего сервиса для передачи клиенту
    * @param response ответ
    */
-  final case class Pass(response: HttpResponse) extends Response
+  final case class Pass(response: P) extends Response
 
   /**
    * Преобразовать запрос
@@ -109,15 +77,15 @@ trait DataFormatSupport[C, R] {
    * @param rq      запрос
    * @param replyTo адрес обработчика ответного сообщения
    */
-  final case class Transform(data: C, rq: HttpRequest, replyTo: ActorRef[Response]) extends Command
+  final case class Transform(data: C, rq: Q, replyTo: T[Response]) extends Command
 
-  final case class Proxy(response: HttpResponse, dst: ActorRef[Response]) extends Command
+  final case class Proxy(response: P, dst: T[Response]) extends Command
 
   /**
    * Сообщение о том, что запрос выполнить не удалось
    * @param dst получатель сообщения
    */
-  case class FailedRequest(dst: ActorRef[Response]) extends Command {
+  case class FailedRequest(dst: T[Response]) extends Command {
     def print(e: Throwable): this.type = {
       e.printStackTrace()
       this

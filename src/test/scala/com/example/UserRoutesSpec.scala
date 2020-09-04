@@ -9,8 +9,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{Matchers, WordSpec}
 import akka.actor.typed.scaladsl.adapter._
-import com.sbrf.util.json.JsonSupport
-import com.sbrf.util.xml.XMLSupport
+import com.sbrf.util.akka_.{JsonSupport, XMLSupport}
 
 //#set-up
 class UserRoutesSpec extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest {

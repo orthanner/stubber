@@ -7,8 +7,9 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.{Route, StandardRoute}
 import akka.util.Timeout
 import com.example.UserRegistry._
-import com.sbrf.util.json.{HandlerExample, JsonSupport}
-import com.sbrf.util.xml.{Copier, XMLSupport}
+import com.sbrf.util.akka_.{JsonSupport, XMLSupport}
+import com.sbrf.util.json.HandlerExample
+import com.sbrf.util.xml.Copier
 import spray.json.JsValue
 
 import scala.concurrent.Future
