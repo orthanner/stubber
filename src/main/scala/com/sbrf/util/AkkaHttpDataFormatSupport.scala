@@ -8,15 +8,15 @@ import akka.http.scaladsl.model.{HttpRequest, HttpResponse, Uri}
 
 import scala.concurrent.Future
 
-trait AkkaHttpDataFormatSupport[C, R] extends DataFormatSupport[HttpRequest, C, R, HttpResponse, ActorRef] {
-  private def rewrite(uri: Uri): Uri = uri.copy(authority = uri.authority.copy(port = 9999))
+abstract class AkkaHttpDataFormatSupport[C, R] extends DataFormatSupport[HttpRequest, C, R, HttpResponse, ActorRef] {
+  private def rewrite(uri: Uri): Uri = uri.copy(authority = uri.authority.copy(port = 8888))
 
   override def getPathFromRequest(rq: HttpRequest): String = rq.uri.path.toString()
 
-  def doRequest(rq: HttpRequest)(implicit sys: ActorSystem): Future[HttpResponse] =
+  private def doRequest(rq: HttpRequest)(implicit sys: ActorSystem): Future[HttpResponse] =
     Http().singleRequest(rq.copy(uri = rewrite(rq.uri)))
 
-  def proxy(dst: ActorRef[Response]): HttpResponse => Proxy = Proxy(_, dst)
+  private def proxy(dst: ActorRef[Response]): HttpResponse => Proxy = Proxy(_, dst)
 
   def apply(): Behavior[Command] =
     Behaviors.receive[Command] { (ctx: ActorContext[Command], command: Command) =>
